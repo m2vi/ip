@@ -64,11 +64,17 @@ class Ip {
     return data;
   }
 
+  private async ipapi(ip: string) {
+    const data = await (await fetch(`http://ip-api.com/json/${ip}?fields=16904704`)).json();
+
+    return data;
+  }
+
   private async fetchData(ip: string) {
     const cached = cache.get(ip);
     if (cached) return cached;
 
-    const data = await Promise.all([this.vpnapi(ip), this.abstract(ip)]);
+    const data = await Promise.all([this.vpnapi(ip), this.abstract(ip), this.ipapi(ip)]);
 
     cache.put(ip, data, 1000 * 60 * 60);
 
@@ -84,7 +90,7 @@ class Ip {
       };
     }
 
-    const [vpnapi, abstract] = await this.fetchData(ip);
+    const [vpnapi, abstract, ipapi] = await this.fetchData(ip);
 
     return {
       ip,
@@ -96,12 +102,14 @@ class Ip {
       postal: abstract?.postal_code ?? null,
       currency: abstract?.currency?.currency_code ?? null,
       timezone: abstract?.timezone?.name ?? null,
+      reverse: ipapi?.reverse ?? null,
+      isp: ipapi?.isp ?? null,
       asn: {
         asn: vpnapi?.network?.autonomous_system_number ?? null,
         name: vpnapi?.network?.autonomous_system_organization ?? null,
         route: vpnapi?.network?.network ?? null,
       },
-      privacy: vpnapi?.security ?? null,
+      privacy: { ...(vpnapi?.security ?? {}), hosting: ipapi?.hosting ?? null, cellular: ipapi?.mobile ?? null },
     };
   }
 }

@@ -51,6 +51,8 @@ const Home = (props: { data: any }) => {
             </Group>
 
             <Group>
+              <Text label='Cellular' value={data?.privacy?.cellular} />
+              <Text label='Hosting' value={data?.privacy?.hosting} />
               <Text label='Proxy' value={data?.privacy?.proxy} />
               <Text label='Relay' value={data?.privacy?.relay} />
               <Text label='Tor' value={data?.privacy?.tor} />
